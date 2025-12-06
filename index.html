@@ -70,7 +70,17 @@ button{cursor:pointer;}
     <span class="close">&times;</span>
     <h3>Customer Login</h3>
     <input type="text" id="customerPhone" placeholder="Enter phone number">
-    <button id="customerLoginSubmit">Login</button>
+    <button id="sendOTP">Send OTP</button>
+  </div>
+</div>
+
+<!-- OTP Verification Modal -->
+<div id="otpModal" class="modal">
+  <div class="modal-content">
+    <span class="closeOTP">&times;</span>
+    <h3>Enter OTP</h3>
+    <input type="text" id="otpInput" placeholder="Enter OTP">
+    <button id="verifyOTP">Verify OTP</button>
   </div>
 </div>
 
@@ -118,22 +128,45 @@ setInterval(()=>{document.getElementById('sliderImg').src=sliderImages[sliderInd
 // Products
 let products=JSON.parse(localStorage.getItem('products'))||[];
 
+// Demo OTP
+let currentOTP="";
+
 // Customer Login
 const customerLoginBtnHeader=document.getElementById('customerLoginBtnHeader');
-const modal=document.getElementById('customerLoginModal');
+const customerModal=document.getElementById('customerLoginModal');
 const closeModal=document.querySelector('.close');
-const customerLoginSubmit=document.getElementById('customerLoginSubmit');
+const sendOTP=document.getElementById('sendOTP');
 const customerPhoneInput=document.getElementById('customerPhone');
 
-customerLoginBtnHeader.onclick=()=>{modal.style.display='block';}
-closeModal.onclick=()=>{modal.style.display='none';}
-customerLoginSubmit.onclick=()=>{
-  if(customerPhoneInput.value){
-    localStorage.setItem('customerPhone',customerPhoneInput.value);
-    modal.style.display='none';
-    loadCustomerPage();
+const otpModal=document.getElementById('otpModal');
+const closeOTP=document.querySelector('.closeOTP');
+const otpInput=document.getElementById('otpInput');
+const verifyOTP=document.getElementById('verifyOTP');
+
+customerLoginBtnHeader.onclick=()=>{customerModal.style.display='block';}
+closeModal.onclick=()=>{customerModal.style.display='none';}
+closeOTP.onclick=()=>{otpModal.style.display='none';}
+
+sendOTP.onclick=()=>{
+  const phone=customerPhoneInput.value.trim();
+  if(phone){
+    currentOTP=Math.floor(100000 + Math.random()*900000).toString(); // 6-digit OTP
+    alert("Your OTP is: "+currentOTP); // Demo, in real app SMS API needed
+    customerModal.style.display='none';
+    otpModal.style.display='block';
   } else alert("Enter phone number");
 }
+
+verifyOTP.onclick=()=>{
+  if(otpInput.value===currentOTP){
+    localStorage.setItem('customerPhone',customerPhoneInput.value);
+    otpModal.style.display='none';
+    loadCustomerPage();
+    alert("Login successful!");
+  } else alert("Incorrect OTP");
+}
+
+// Auto login
 if(localStorage.getItem('customerPhone')){loadCustomerPage();}
 function loadCustomerPage(){
   document.getElementById('customerPage').style.display='block';
