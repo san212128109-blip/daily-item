@@ -6,26 +6,28 @@
 <title>MN Daily Items</title>
 <style>
 body{margin:0;font-family:sans-serif;background:#f9f9f9;}
-header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;}
-header input{padding:5px;width:200px;}
-header button{padding:5px 10px;}
-.hero-slider img{width:100%;height:300px;object-fit:cover;}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;flex-wrap:wrap;}
+header input{padding:5px;width:200px;max-width:100%;}
+header button{padding:5px 10px;margin:2px;}
+.hero-slider{width:100%;height:300px;overflow:hidden;position:relative;}
+.hero-slider img{width:100%;height:300px;object-fit:cover;transition:opacity 0.5s;}
 .categories{padding:20px;}
 .category-cards{display:flex;gap:10px;flex-wrap:wrap;}
-.category-card{flex:1;min-width:120px;background:#fff;padding:20px;text-align:center;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.category-card{flex:1;min-width:120px;background:#fff;padding:20px;text-align:center;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);box-sizing:border-box;}
 .products{padding:20px;}
 #productsList{display:flex;flex-wrap:wrap;gap:10px;}
-.productCard{border:1px solid #ccc;padding:10px;width:150px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.productCard{border:1px solid #ccc;padding:10px;width:150px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1);box-sizing:border-box;}
 .checkout{padding:20px;background:#fff;margin:20px;}
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
-.modal-content{background:white;padding:20px;margin:50px auto;width:300px;position:relative;}
-.close{position:absolute;top:10px;right:10px;cursor:pointer;}
+.modal-content{background:white;padding:20px;margin:50px auto;width:300px;position:relative;box-sizing:border-box;}
+.close, .closeOTP, .closeAdmin{position:absolute;top:10px;right:10px;cursor:pointer;font-size:18px;font-weight:bold;}
 #adminPanel{padding:20px;background:#fff;margin:20px;}
 #adminProducts .productCard{width:200px;}
 button{cursor:pointer;}
 @media(max-width:768px){
   .category-cards{flex-direction:column;}
   #productsList{flex-direction:column;}
+  header{flex-direction:column;align-items:flex-start;}
 }
 </style>
 </head>
@@ -34,8 +36,10 @@ button{cursor:pointer;}
 <header>
   <div class="logo">MN Daily Items</div>
   <input type="text" id="searchInput" placeholder="Search products...">
-  <button id="customerLoginBtnHeader">Customer Login</button>
-  <button id="adminLoginBtnHeader">Admin Login</button>
+  <div>
+    <button id="customerLoginBtnHeader">Customer Login</button>
+    <button id="adminLoginBtnHeader">Admin Login</button>
+  </div>
 </header>
 
 <div class="hero-slider">
@@ -123,7 +127,11 @@ button{cursor:pointer;}
 // Slider
 let sliderImages=["https://via.placeholder.com/1200x300?text=Banner+1","https://via.placeholder.com/1200x300?text=Banner+2","https://via.placeholder.com/1200x300?text=Banner+3"];
 let sliderIndex=0;
-setInterval(()=>{document.getElementById('sliderImg').src=sliderImages[sliderIndex];sliderIndex=(sliderIndex+1)%sliderImages.length;},3000);
+setInterval(()=>{
+  const img=document.getElementById('sliderImg');
+  img.style.opacity=0;
+  setTimeout(()=>{img.src=sliderImages[sliderIndex];img.style.opacity=1;sliderIndex=(sliderIndex+1)%sliderImages.length;},200);
+},3000);
 
 // Products
 let products=JSON.parse(localStorage.getItem('products'))||[];
@@ -143,17 +151,27 @@ const closeOTP=document.querySelector('.closeOTP');
 const otpInput=document.getElementById('otpInput');
 const verifyOTP=document.getElementById('verifyOTP');
 
-customerLoginBtnHeader.onclick=()=>{customerModal.style.display='block';}
-closeModal.onclick=()=>{customerModal.style.display='none';}
-closeOTP.onclick=()=>{otpModal.style.display='none';}
+customerLoginBtnHeader.onclick=()=>{
+  customerModal.style.display='block';
+  document.body.style.overflow='hidden';
+}
+closeModal.onclick=()=>{
+  customerModal.style.display='none';
+  document.body.style.overflow='auto';
+}
+closeOTP.onclick=()=>{
+  otpModal.style.display='none';
+  document.body.style.overflow='auto';
+}
 
 sendOTP.onclick=()=>{
   const phone=customerPhoneInput.value.trim();
   if(phone){
     currentOTP=Math.floor(100000 + Math.random()*900000).toString(); // 6-digit OTP
-    alert("Your OTP is: "+currentOTP); // Demo, in real app SMS API needed
+    alert("Your OTP is: "+currentOTP); // Demo OTP
     customerModal.style.display='none';
     otpModal.style.display='block';
+    document.body.style.overflow='hidden';
   } else alert("Enter phone number");
 }
 
@@ -161,6 +179,7 @@ verifyOTP.onclick=()=>{
   if(otpInput.value===currentOTP){
     localStorage.setItem('customerPhone',customerPhoneInput.value);
     otpModal.style.display='none';
+    document.body.style.overflow='auto';
     loadCustomerPage();
     alert("Login successful!");
   } else alert("Incorrect OTP");
@@ -208,13 +227,14 @@ const adminModal=document.getElementById('adminLoginModal');
 const closeAdmin=document.querySelector('.closeAdmin');
 const adminLoginBtn=document.getElementById('adminLoginBtn');
 
-adminLoginBtnHeader.onclick=()=>{adminModal.style.display='block';}
-closeAdmin.onclick=()=>{adminModal.style.display='none';}
+adminLoginBtnHeader.onclick=()=>{adminModal.style.display='block';document.body.style.overflow='hidden';}
+closeAdmin.onclick=()=>{adminModal.style.display='none';document.body.style.overflow='auto';}
 adminLoginBtn.onclick=()=>{
   const username=document.getElementById('adminUser').value;
   const password=document.getElementById('adminPass').value;
   if(username==="Daily"&&password==="nafis128!@*"){
     adminModal.style.display='none';
+    document.body.style.overflow='auto';
     document.getElementById('adminPanel').style.display='block';
     loadAdminProducts();
   } else alert("Wrong credentials");
@@ -264,7 +284,6 @@ function deleteProduct(i){
   loadCustomerPage();
 }
 window.deleteProduct=deleteProduct;
-
 </script>
 </body>
 </html>
