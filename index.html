@@ -7,36 +7,51 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="login-choice">
-  <h2>Login as</h2>
-  <button id="customerBtn">Customer</button>
-  <button id="adminBtn">Admin</button>
-</div>
 
-<!-- Customer login -->
-<div id="customerLogin" style="display:none;">
-  <h3>Customer Login</h3>
-  <input type="text" id="customerPhone" placeholder="Enter phone number">
-  <button id="customerLoginBtn">Login</button>
-</div>
-
-<!-- Admin login -->
-<div id="adminLogin" style="display:none;">
-  <h3>Admin Login</h3>
-  <input type="text" id="adminUser" placeholder="Username">
-  <input type="password" id="adminPass" placeholder="Password">
-  <button id="adminLoginBtn">Login</button>
-</div>
-
-<!-- Customer products -->
-<div id="customerPage" style="display:none;">
-  <h2>Products</h2>
+<!-- Navbar -->
+<header>
+  <div class="logo">MN Daily Items</div>
   <input type="text" id="searchInput" placeholder="Search products...">
+  <button id="customerLoginBtnHeader">Login</button>
+</header>
+
+<!-- Hero Slider -->
+<div class="hero-slider">
+  <img id="sliderImg" src="https://via.placeholder.com/1200x300?text=Banner+1" alt="Banner">
+</div>
+
+<!-- Categories -->
+<section class="categories">
+  <h2>Categories</h2>
+  <div class="category-cards">
+    <div class="category-card" data-category="Staples">Staples</div>
+    <div class="category-card" data-category="Oils & Spices">Oils & Spices</div>
+    <div class="category-card" data-category="Beverages">Beverages</div>
+    <div class="category-card" data-category="Snacks">Snacks</div>
+    <div class="category-card" data-category="Household">Household</div>
+  </div>
+</section>
+
+<!-- Products Grid -->
+<section class="products">
+  <h2>Featured Products</h2>
   <div id="productsList"></div>
-  <div id="checkout">
-    <h3>Checkout</h3>
-    <p>Payment Number: <span id="paymentNumber"></span></p>
-    <p>Method: bKash / Nagad</p>
+</section>
+
+<!-- Checkout / Payment -->
+<section class="checkout">
+  <h3>Checkout</h3>
+  <p>Payment Number: <span id="paymentNumber"></span></p>
+  <p>Method: bKash / Nagad</p>
+</section>
+
+<!-- Customer Login Modal -->
+<div id="customerLoginModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Customer Login</h3>
+    <input type="text" id="customerPhone" placeholder="Enter phone number">
+    <button id="customerLoginSubmit">Login</button>
   </div>
 </div>
 
