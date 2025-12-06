@@ -1,14 +1,1 @@
-body{margin:0;font-family:sans-serif;}
-header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;}
-header input{padding:5px;width:200px;}
-.hero-slider img{width:100%;height:300px;object-fit:cover;}
-.categories{padding:20px;}
-.category-cards{display:flex;gap:10px;flex-wrap:wrap;}
-.category-card{flex:1;min-width:120px;background:#f2f2f2;padding:20px;text-align:center;cursor:pointer;}
-.products{padding:20px;}
-#productsList{display:flex;flex-wrap:wrap;gap:10px;}
-.productCard{border:1px solid #ccc;padding:10px;width:150px;}
-.checkout{padding:20px;background:#f9f9f9;}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
-.modal-content{background:white;padding:20px;margin:50px auto;width:300px;position:relative;}
-.close{position:absolute;top:10px;right:10px;cursor:pointer;}
+
