@@ -248,7 +248,7 @@ const adminProducts=document.getElementById('adminProducts');
 
 savePayment.onclick=()=>{
   const val=adminPayment.value.trim();
-  if(val){localStorage.setItem('paymentNumber',val);alert("Saved!");}else alert("Enter number");
+  if(val){localStorage.setItem('paymentNumber',val);alert("Saved!");loadCustomerPage();}else alert("Enter number");
 }
 
 addProductBtn.onclick=()=>{
