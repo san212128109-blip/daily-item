@@ -1,240 +1,215 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MN Daily Items - Full</title>
-<style>
-body{font-family:Arial,sans-serif;margin:0;padding:0;background:#f7f7f7;}
-header{background:#06b6d4;color:white;padding:18px;text-align:center;}
-header h1{margin:0;font-size:24px;}
-.container{max-width:500px;margin:20px auto;background:white;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-h2{text-align:center;color:#ff6f61;}
-input,select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:12px;background-color:#ff6f61;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;font-size:16px;}
-button:hover{background-color:#e55b50;}
-.product{margin-bottom:15px;padding:10px;border:1px solid #ddd;border-radius:8px;}
-.cart{position:fixed;right:18px;bottom:18px;width:300px;max-width:94%;background:white;padding:12px;border-radius:12px;box-shadow:0 6px 14px rgba(2,6,23,0.1);}
-.cart h3{margin:0 0 10px 0;}
-.cart-item{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.qty-controls button{margin:0 2px;padding:2px 6px;}
-#checkoutModal{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;padding:20px;}
-#checkoutModal .modal-content{background:white;padding:20px;border-radius:12px;max-width:400px;width:100%;}
-.message{text-align:center;margin-top:12px;color:green;}
-</style>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>misron — Admin</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="header">
+    <div class="brand"><div class="logo">M</div><div>MN Daily Items — Admin</div></div>
+    <div class="top-actions">
+      <a href="index.html" class="ghost">Store</a>
+      <span class="pill small">Admin</span>
+    </div>
+  </header>
 
-<header><h1>MN Daily Items</h1></header>
+  <main class="container">
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:300px">
+        <h3>Login</h3>
+        <div class="small">Use default password <code>admin123</code> (change in code if you want)</div>
+        <div class="form-row">
+          <input id="adminPass" placeholder="Password">
+          <button id="adminLogin" class="btn">Unlock</button>
+        </div>
 
-<div class="container" id="loginContainer">
-<h2>Login</h2>
-<select id="role">
-<option value="customer">Customer</option>
-<option value="admin">Admin</option>
-</select>
-<input type="text" id="username" placeholder="Username">
-<input type="password" id="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<div class="message" id="loginMessage"></div>
-</div>
+        <div id="adminArea" style="display:none;margin-top:12px">
+          <h4>Payment Numbers</h4>
+          <div class="form-row">
+            <input id="bkashNum" placeholder="bKash number">
+            <input id="nagadNum" placeholder="Nagad number">
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button id="savePayment" class="primary">Save Payment</button>
+            <button id="loadDefault" class="ghost">Load</button>
+          </div>
 
-<div class="container" id="userPanel" style="display:none;">
-<h2>Products</h2>
-<div id="products"></div>
-</div>
+          <h4>Sectors</h4>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="newSector" placeholder="New sector name">
+            <button id="addSector" class="primary">Add</button>
+          </div>
+          <div id="sectorsList" class="small"></div>
 
-<div class="cart" id="cartBox" style="display:none;">
-<h3>Cart</h3>
-<div id="cartItems"></div>
-<div><strong>Total: ৳<span id="cartTotal">0</span></strong></div>
-<button id="checkoutBtn">Checkout</button>
-</div>
+          <h4 style="margin-top:12px">Add Product (selected sector)</h4>
+          <div class="form-row">
+            <input id="prodTitle" placeholder="Title">
+            <input id="prodPrice" placeholder="Price">
+          </div>
+          <div class="form-row">
+            <textarea id="prodDesc" placeholder="Description"></textarea>
+          </div>
+          <div class="form-row">
+            <input type="file" id="prodImage">
+            <button id="addProductBtn" class="primary">Add Product</button>
+          </div>
 
-<div id="checkoutModal">
-<div class="modal-content">
-<h2>Checkout & Payment</h2>
-<div id="checkoutStep1">
-<h3>Shipping Info</h3>
-<form id="checkoutForm">
-<input type="text" name="name" placeholder="Your Name" required>
-<input type="text" name="address" placeholder="Address" required>
-<button type="button" id="nextToPayment">Next: Payment</button>
-</form>
-</div>
-<div id="checkoutStep2" style="display:none;">
-<h3>Payment Method</h3>
-<input type="text" id="cardName" placeholder="Cardholder Name">
-<input type="text" id="cardNumber" placeholder="Card Number">
-<input type="text" id="expiry" placeholder="MM/YY">
-<input type="text" id="cvv" placeholder="CVV">
-<button onclick="placeOrder()">Place Order</button>
-<div class="message" id="message"></div>
-</div>
-<button type="button" id="cancelCheckout">Cancel</button>
-</div>
-</div>
+          <h4 style="margin-top:12px">Manage / Export</h4>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="exportBtn" class="muted">Export JSON</button>
+            <input type="file" id="importFile">
+            <button id="resetBtn" class="danger">Reset All</button>
+          </div>
+
+          <div id="manageProducts" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div style="width:360px;min-width:260px">
+        <h3>Preview</h3>
+        <div id="previewSectors" class="sectors" style="margin-bottom:12px"></div>
+        <div id="previewProducts"></div>
+      </div>
+    </div>
+  </main>
 
 <script>
-// Admin credentials
-const adminUser="admin";
-const adminPass="nafis128!@*";
+// reuse same storage key
+const STORE_KEY = 'MISRON_STORE_v1';
+const PAYMENT_KEY = 'MISRON_PAY_v1';
+const ADMIN_PW = 'admin123';
 
-// Load products from LocalStorage or default
-let products=JSON.parse(localStorage.getItem('products'))||[
-{id:1,name:"পণ্য ১",price:100},
-{id:2,name:"পণ্য ২",price:200},
-{id:3,name:"পণ্য ৩",price:300},
-];
+// helpers
+const $ = id => document.getElementById(id);
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function loadStore(){ const r=localStorage.getItem(STORE_KEY); return r?JSON.parse(r):{sectors:[]};}
+function saveStore(s){ localStorage.setItem(STORE_KEY,JSON.stringify(s)); }
+function loadPayment(){ const r=localStorage.getItem(PAYMENT_KEY); return r?JSON.parse(r):{bkash:'',nagad:''};}
+function savePayment(p){ localStorage.setItem(PAYMENT_KEY,JSON.stringify(p));}
 
-let cart={};
+// UI
+let store = loadStore();
+let selectedSector = store.sectors[0]?.id || null;
 
-function login(){
-const role=document.getElementById('role').value;
-const user=document.getElementById('username').value;
-const pass=document.getElementById('password').value;
-const msg=document.getElementById('loginMessage');
-if(role==="admin"){
-if(user===adminUser && pass===adminPass){
-document.getElementById('loginContainer').style.display='none';
-document.getElementById('userPanel').style.display='block';
-document.getElementById('cartBox').style.display='none';
-showProducts(true);
-}else{
-msg.innerText="Username বা Password ভুল!";
-msg.style.color='red';
+function renderPreview(){
+  const sEl = $('previewSectors'); sEl.innerHTML=''; store.sectors.forEach(s=>{
+    const b=document.createElement('div'); b.className='sector'; b.textContent=s.name; b.onclick=()=>{ selectedSector=s.id; renderManage(); renderPreview(); };
+    if(selectedSector===s.id) b.classList.add('active');
+    sEl.appendChild(b);
+  });
+  renderPreviewProducts();
 }
-}else{
-document.getElementById('loginContainer').style.display='none';
-document.getElementById('userPanel').style.display='block';
-document.getElementById('cartBox').style.display='block';
-showProducts(false);
-}
-}
-
-function showProducts(isAdmin){
-let html='';
-products.forEach(p=>{
-html+=`<div class="product">
-Name: <input id="name-${p.id}" value="${p.name}" ${isAdmin?'':'disabled'}>
-Price: <input id="price-${p.id}" value="${p.price}" ${isAdmin?'':'disabled'}>`;
-if(isAdmin){
-html+=`<button onclick="updateProduct(${p.id})">Update</button>`;
-}else{
-html+=`<button onclick="addToCart(${p.id})">Add to Cart</button>`;
-}
-html+=`</div>`;
-});
-document.getElementById('products').innerHTML=html;
+function renderPreviewProducts(){
+  const p = $('previewProducts'); p.innerHTML='';
+  const sec = store.sectors.find(x=>x.id===selectedSector);
+  if(!sec) return;
+  sec.products.forEach(prod=>{
+    const d = document.createElement('div'); d.className='card'; d.style.marginBottom='8px';
+    d.innerHTML = `<div class="thumb">${prod.image?'<img src="'+prod.image+'">':prod.title}</div><div class="title">${prod.title}</div><div class="price">৳${prod.price}</div>`;
+    p.appendChild(d);
+  });
 }
 
-function updateProduct(id){
-const name=document.getElementById(`name-${id}`).value;
-const price=document.getElementById(`price-${id}`).value;
-const product=products.find(p=>p.id===id);
-product.name=name;
-product.price=Number(price);
-localStorage.setItem('products',JSON.stringify(products));
-alert(`Product updated! ✅\nName: ${name}\nPrice: ${price}`);
+function renderManage(){
+  $('sectorsList').innerHTML=''; $('manageProducts').innerHTML='';
+  store.sectors.forEach(s=>{
+    const div=document.createElement('div'); div.style.display='flex'; div.style.gap='8px'; div.style.alignItems='center'; div.textContent = s.name;
+    const btnR=document.createElement('button'); btnR.className='muted'; btnR.textContent='Rename'; btnR.onclick=()=>{
+      const nn = prompt('New name', s.name); if(nn){ s.name = nn; saveStore(store); renderManage(); renderPreview(); }
+    };
+    const btnD=document.createElement('button'); btnD.className='danger'; btnD.textContent='Delete'; btnD.onclick=()=>{
+      if(!confirm('Delete section and its products?')) return; store.sectors = store.sectors.filter(x=>x.id!==s.id); if(store.sectors.length===0) { alert('Add at least one sector'); }
+      if(selectedSector===s.id) selectedSector = store.sectors[0]?.id || null; saveStore(store); renderManage(); renderPreview();
+    };
+    div.appendChild(btnR); div.appendChild(btnD); $('sectorsList').appendChild(div);
+  });
+  // products
+  const sec = store.sectors.find(x=>x.id===selectedSector);
+  if(sec){
+    sec.products.forEach(p=>{
+      const row = document.createElement('div'); row.style.display='flex'; row.style.gap='8px'; row.style.alignItems='center'; row.style.marginBottom='8px';
+      row.innerHTML = `<div style="flex:1"><strong>${p.title}</strong><div class="small">৳${p.price}</div></div>`;
+      const e = document.createElement('button'); e.className='muted'; e.textContent='Edit'; e.onclick=()=> editProduct(p.id);
+      const d = document.createElement('button'); d.className='danger'; d.textContent='Delete'; d.onclick=()=>{ if(confirm('Delete?')){ sec.products = sec.products.filter(x=>x.id!==p.id); saveStore(store); renderManage(); renderPreview(); } };
+      row.appendChild(e); row.appendChild(d); $('manageProducts').appendChild(row);
+    });
+  }
 }
 
-// CART FUNCTIONS
-const cartItemsContainer=document.getElementById('cartItems');
-const cartTotalEl=document.getElementById('cartTotal');
-
-function addToCart(id){
-const prod=products.find(x=>x.id===id);
-if(!cart[id]) cart[id]={...prod,qty:0};
-cart[id].qty++;
-showCart();
+// initial render
+function init(){
+  if(!store.sectors || store.sectors.length===0){
+    store = { sectors: [
+      {id:'s1',name:'Staples',products:[]},
+      {id:'s2',name:'Oils & Spices',products:[]},
+      {id:'s3',name:'Beverages',products:[]},
+      {id:'s4',name:'Snacks',products:[]},
+      {id:'s5',name:'Household',products:[]}
+    ]};
+    saveStore(store);
+  }
+  renderPreview(); renderManage();
 }
+init();
 
-function updateQty(id,change){
-if(cart[id]){
-cart[id].qty+=change;
-if(cart[id].qty<=0) delete cart[id];
-showCart();
-}
-}
-
-function showCart(){
-cartItemsContainer.innerHTML='';
-let total=0;
-for(const key in cart){
-const item=cart[key];
-total+=item.price*item.qty;
-const div=document.createElement('div');
-div.className='cart-item';
-div.innerHTML=`<span>${item.name} x ${item.qty} - ৳${item.price*item.qty}</span>
-<div class="qty-controls">
-<button onclick="updateQty(${item.id},-1)">-</button>
-<button onclick="updateQty(${item.id},1)">+</button>
-<button onclick="removeItem(${item.id})">Remove</button>
-</div>`;
-cartItemsContainer.appendChild(div);
-}
-cartTotalEl.textContent=total;
-}
-
-function removeItem(id){delete cart[id];showCart();}
-
-// CHECKOUT
-const checkoutBtn=document.getElementById('checkoutBtn');
-const checkoutModal=document.getElementById('checkoutModal');
-const cancelCheckout=document.getElementById('cancelCheckout');
-const checkoutForm=document.getElementById('checkoutForm');
-const nextToPayment=document.getElementById('nextToPayment');
-const checkoutStep1=document.getElementById('checkoutStep1');
-const checkoutStep2=document.getElementById('checkoutStep2');
-const messageEl=document.getElementById('message');
-
-checkoutBtn.addEventListener('click',()=>{
-if(Object.keys(cart).length===0){alert('Your cart is empty!');return;}
-checkoutModal.style.display='flex';
-checkoutStep1.style.display='block';
-checkoutStep2.style.display='none';
-messageEl.innerText='';
+// admin login
+$('adminLogin').addEventListener('click',()=>{
+  const pw = $('adminPass').value;
+  if(pw !== ADMIN_PW) return alert('Wrong password');
+  $('adminArea').style.display='block'; $('adminPass').value=''; alert('Admin unlocked');
+  // load payment nums
+  const p = loadPayment(); $('bkashNum').value = p.bkash || ''; $('nagadNum').value = p.nagad || '';
 });
 
-cancelCheckout.addEventListener('click',()=>{checkoutModal.style.display='none';});
-
-nextToPayment.addEventListener('click',()=>{
-if(!checkoutForm.name.value || !checkoutForm.address.value){
-alert('সব ফিল্ড পূরণ করো!');
-return;
-}
-checkoutStep1.style.display='none';
-checkoutStep2.style.display='block';
+// add sector
+$('addSector').addEventListener('click',()=>{
+  const name = $('newSector').value.trim(); if(!name) return alert('Enter name');
+  const id = uid(); store.sectors.push({id,name,products:[]}); saveStore(store); $('newSector').value=''; renderPreview(); renderManage();
 });
 
-function placeOrder(){
-const name=document.getElementById('cardName').value;
-const number=document.getElementById('cardNumber').value;
-const expiry=document.getElementById('expiry').value;
-const cvv=document.getElementById('cvv').value;
+// add product
+$('addProductBtn').addEventListener('click', async ()=>{
+  if(!selectedSector) return alert('Select sector');
+  const sec = store.sectors.find(x=>x.id===selectedSector);
+  const title = $('prodTitle').value.trim(); const price = Number($('prodPrice').value);
+  const desc = $('prodDesc').value.trim();
+  if(!title || !price) return alert('Provide title and price');
+  const file = $('prodImage').files[0]; let dataUrl='';
+  if(file){
+    dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(); r.readAsDataURL(file); });
+  }
+  const p = { id: uid(), title, price, description: desc, image: dataUrl };
+  sec.products.push(p); saveStore(store); $('prodTitle').value=''; $('prodPrice').value=''; $('prodDesc').value=''; $('prodImage').value=''; renderManage(); renderPreview();
+});
 
-if(!name||!number||!expiry||!cvv){
-messageEl.innerText='সব ফিল্ড পূরণ করো!';
-messageEl.style.color='red';
-return;
+// edit product
+function editProduct(id){
+  const sec = store.sectors.find(s=> s.products.find(p=>p.id===id));
+  if(!sec) return;
+  const prod = sec.products.find(p=>p.id===id);
+  const newTitle = prompt('Title', prod.title); if(newTitle===null) return;
+  const newPrice = prompt('Price', prod.price); if(newPrice===null) return;
+  prod.title = newTitle; prod.price = Number(newPrice); saveStore(store); renderManage(); renderPreview();
 }
 
-if(number.length!==16||cvv.length!==3){
-messageEl.innerText='কার্ড নাম্বার বা CVV ভুল!';
-messageEl.style.color='red';
-return;
-}
+// payment save/load
+$('savePayment').addEventListener('click',()=>{
+  const bk = $('bkashNum').value.trim(); const ng = $('nagadNum').value.trim();
+  savePayment({bkash:bk,nagad:ng}); alert('Saved');
+});
+$('loadDefault').addEventListener('click',()=>{ const p=loadPayment(); $('bkashNum').value=p.bkash||''; $('nagadNum').value=p.nagad||''; });
 
-alert(`ধন্যবাদ ${checkoutForm.name.value}! আপনার অর্ডার নেওয়া হয়েছে।`);
-cart={};
-showCart();
-checkoutModal.style.display='none';
-checkoutForm.reset();
-document.getElementById('cardName').value='';
-document.getElementById('cardNumber').value='';
-document.getElementById('expiry').value='';
-document.getElementById('cvv').value='';
-}
+// export / import
+$('exportBtn').addEventListener('click',()=>{
+  const blob = new Blob([JSON.stringify(store,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='misron_store.json'; a.click(); URL.revokeObjectURL(url);
+});
+$('importFile').addEventListener('change', async (ev)=>{ const f=ev.target.files[0]; if(!f) return; const txt = await f.text(); try{ const parsed = JSON.parse(txt); if(parsed.sectors){ store = parsed; saveStore(store); renderPreview(); renderManage(); alert('Imported'); } else alert('Invalid file'); }catch(e){ alert('Invalid JSON'); }});
+
+// reset
+$('resetBtn').addEventListener('click',()=>{ if(!confirm('Reset all?')) return; localStorage.removeItem(STORE_KEY); localStorage.removeItem(PAYMENT_KEY); init(); alert('Reset done'); });
+
 </script>
 </body>
 </html>
