@@ -5,23 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MN Daily Items</title>
 <style>
-body{margin:0;font-family:sans-serif;}
+body{margin:0;font-family:sans-serif;background:#f9f9f9;}
 header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;}
 header input{padding:5px;width:200px;}
+header button{padding:5px 10px;}
 .hero-slider img{width:100%;height:300px;object-fit:cover;}
 .categories{padding:20px;}
 .category-cards{display:flex;gap:10px;flex-wrap:wrap;}
-.category-card{flex:1;min-width:120px;background:#f2f2f2;padding:20px;text-align:center;cursor:pointer;}
+.category-card{flex:1;min-width:120px;background:#fff;padding:20px;text-align:center;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
 .products{padding:20px;}
 #productsList{display:flex;flex-wrap:wrap;gap:10px;}
-.productCard{border:1px solid #ccc;padding:10px;width:150px;}
-.checkout{padding:20px;background:#f9f9f9;}
+.productCard{border:1px solid #ccc;padding:10px;width:150px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.checkout{padding:20px;background:#fff;margin:20px;}
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
 .modal-content{background:white;padding:20px;margin:50px auto;width:300px;position:relative;}
 .close{position:absolute;top:10px;right:10px;cursor:pointer;}
-#adminPanel{padding:20px;background:#f4f4f4;}
+#adminPanel{padding:20px;background:#fff;margin:20px;}
 #adminProducts .productCard{width:200px;}
 button{cursor:pointer;}
+@media(max-width:768px){
+  .category-cards{flex-direction:column;}
+  #productsList{flex-direction:column;}
+}
 </style>
 </head>
 <body>
@@ -29,7 +34,8 @@ button{cursor:pointer;}
 <header>
   <div class="logo">MN Daily Items</div>
   <input type="text" id="searchInput" placeholder="Search products...">
-  <button id="customerLoginBtnHeader">Login</button>
+  <button id="customerLoginBtnHeader">Customer Login</button>
+  <button id="adminLoginBtnHeader">Admin Login</button>
 </header>
 
 <div class="hero-slider">
@@ -104,121 +110,102 @@ button{cursor:pointer;}
 </div>
 
 <script>
-let sliderImages = [
-  "https://via.placeholder.com/1200x300?text=Banner+1",
-  "https://via.placeholder.com/1200x300?text=Banner+2",
-  "https://via.placeholder.com/1200x300?text=Banner+3"
-];
+// Slider
+let sliderImages=["https://via.placeholder.com/1200x300?text=Banner+1","https://via.placeholder.com/1200x300?text=Banner+2","https://via.placeholder.com/1200x300?text=Banner+3"];
 let sliderIndex=0;
-setInterval(()=>{
-  document.getElementById('sliderImg').src = sliderImages[sliderIndex];
-  sliderIndex = (sliderIndex+1) % sliderImages.length;
-},3000);
+setInterval(()=>{document.getElementById('sliderImg').src=sliderImages[sliderIndex];sliderIndex=(sliderIndex+1)%sliderImages.length;},3000);
 
 // Products
-let products = JSON.parse(localStorage.getItem('products')) || [];
+let products=JSON.parse(localStorage.getItem('products'))||[];
 
 // Customer Login
-const customerLoginBtnHeader = document.getElementById('customerLoginBtnHeader');
-const modal = document.getElementById('customerLoginModal');
-const closeModal = document.querySelector('.close');
-const customerLoginSubmit = document.getElementById('customerLoginSubmit');
-const customerPhoneInput = document.getElementById('customerPhone');
+const customerLoginBtnHeader=document.getElementById('customerLoginBtnHeader');
+const modal=document.getElementById('customerLoginModal');
+const closeModal=document.querySelector('.close');
+const customerLoginSubmit=document.getElementById('customerLoginSubmit');
+const customerPhoneInput=document.getElementById('customerPhone');
 
-customerLoginBtnHeader.onclick = ()=>{ modal.style.display='block'; }
-closeModal.onclick = ()=>{ modal.style.display='none'; }
-
-customerLoginSubmit.onclick = ()=>{
+customerLoginBtnHeader.onclick=()=>{modal.style.display='block';}
+closeModal.onclick=()=>{modal.style.display='none';}
+customerLoginSubmit.onclick=()=>{
   if(customerPhoneInput.value){
-    localStorage.setItem('customerPhone', customerPhoneInput.value);
+    localStorage.setItem('customerPhone',customerPhoneInput.value);
     modal.style.display='none';
     loadCustomerPage();
   } else alert("Enter phone number");
 }
-
-// Auto login
-if(localStorage.getItem('customerPhone')){
-  loadCustomerPage();
-}
-
+if(localStorage.getItem('customerPhone')){loadCustomerPage();}
 function loadCustomerPage(){
   document.getElementById('customerPage').style.display='block';
   document.getElementById('checkoutSection').style.display='block';
   loadProducts();
-  document.getElementById('paymentNumber').innerText = localStorage.getItem('paymentNumber') || 'Not set';
+  document.getElementById('paymentNumber').innerText=localStorage.getItem('paymentNumber')||'Not set';
 }
 
+// Load products
 function loadProducts(filterCategory){
-  const list = document.getElementById('productsList');
-  list.innerHTML='';
-  let filtered = products;
-  if(filterCategory) filtered = products.filter(p=>p.category===filterCategory);
-  filtered.forEach(p=>{
-    list.innerHTML += `<div class="productCard">
+  const list=document.getElementById('productsList');list.innerHTML='';
+  let filtered=products;
+  if(filterCategory)filtered=products.filter(p=>p.category===filterCategory);
+  filtered.forEach(p=>{list.innerHTML+=`<div class="productCard">
       <img src="${p.image}" width="100"><br>
       <b>${p.name}</b> - ৳${p.price}<br>
       Category: ${p.category}
-    </div>`;
-  });
+    </div>`;});
 }
 
 // Search
-document.getElementById('searchInput').addEventListener('input', function(){
-  const val = this.value.toLowerCase();
-  const filtered = products.filter(p=>p.name.toLowerCase().includes(val) || p.category.toLowerCase().includes(val));
-  const list = document.getElementById('productsList');
-  list.innerHTML='';
-  filtered.forEach(p=>{
-    list.innerHTML += `<div class="productCard">
+document.getElementById('searchInput').addEventListener('input',function(){
+  const val=this.value.toLowerCase();
+  const filtered=products.filter(p=>p.name.toLowerCase().includes(val)||p.category.toLowerCase().includes(val));
+  const list=document.getElementById('productsList');list.innerHTML='';
+  filtered.forEach(p=>{list.innerHTML+=`<div class="productCard">
       <img src="${p.image}" width="100"><br>
       <b>${p.name}</b> - ৳${p.price}<br>
       Category: ${p.category}
-    </div>`;
-  });
+    </div>`;});
 });
 
 // Category filter
-document.querySelectorAll('.category-card').forEach(card=>{
-  card.onclick = ()=> loadProducts(card.getAttribute('data-category'));
-});
+document.querySelectorAll('.category-card').forEach(card=>{card.onclick=()=>loadProducts(card.getAttribute('data-category'));});
 
 // Admin Login
-const adminModal = document.getElementById('adminLoginModal');
-const closeAdmin = document.querySelector('.closeAdmin');
-const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminLoginBtnHeader=document.getElementById('adminLoginBtnHeader');
+const adminModal=document.getElementById('adminLoginModal');
+const closeAdmin=document.querySelector('.closeAdmin');
+const adminLoginBtn=document.getElementById('adminLoginBtn');
 
-closeAdmin.onclick = ()=>{ adminModal.style.display='none'; }
-
-adminLoginBtn.onclick = ()=>{
-  const username = document.getElementById('adminUser').value;
-  const password = document.getElementById('adminPass').value;
-  if(username==="Daily" && password==="nafis128!@*"){
+adminLoginBtnHeader.onclick=()=>{adminModal.style.display='block';}
+closeAdmin.onclick=()=>{adminModal.style.display='none';}
+adminLoginBtn.onclick=()=>{
+  const username=document.getElementById('adminUser').value;
+  const password=document.getElementById('adminPass').value;
+  if(username==="Daily"&&password==="nafis128!@*"){
     adminModal.style.display='none';
     document.getElementById('adminPanel').style.display='block';
     loadAdminProducts();
   } else alert("Wrong credentials");
 }
 
-// Admin panel functions
-const savePayment = document.getElementById('savePayment');
-const adminPayment = document.getElementById('adminPayment');
-const addProductBtn = document.getElementById('addProductBtn');
-const adminProducts = document.getElementById('adminProducts');
+// Admin panel
+const savePayment=document.getElementById('savePayment');
+const adminPayment=document.getElementById('adminPayment');
+const addProductBtn=document.getElementById('addProductBtn');
+const adminProducts=document.getElementById('adminProducts');
 
-savePayment.onclick = ()=>{
-  const val = adminPayment.value.trim();
-  if(val){ localStorage.setItem('paymentNumber', val); alert("Saved!"); } 
-  else alert("Enter number");
+savePayment.onclick=()=>{
+  const val=adminPayment.value.trim();
+  if(val){localStorage.setItem('paymentNumber',val);alert("Saved!");}else alert("Enter number");
 }
 
-addProductBtn.onclick = ()=>{
-  const name = document.getElementById('prodName').value;
-  const price = document.getElementById('prodPrice').value;
-  const image = document.getElementById('prodImage').value;
-  const category = document.getElementById('prodCategory').value;
-  if(name && price && category){
-    products.push({name, price, image, category});
-    localStorage.setItem('products', JSON.stringify(products));
+addProductBtn.onclick=()=>{
+  const name=document.getElementById('prodName').value;
+  const price=document.getElementById('prodPrice').value;
+  const image=document.getElementById('prodImage').value;
+  const category=document.getElementById('prodCategory').value;
+  if(name&&price&&category){
+    products.push({name,price,image,category});
+    localStorage.setItem('products',JSON.stringify(products));
     loadAdminProducts();
     loadCustomerPage();
     alert("Product added!");
@@ -228,7 +215,7 @@ addProductBtn.onclick = ()=>{
 function loadAdminProducts(){
   adminProducts.innerHTML='';
   products.forEach((p,i)=>{
-    adminProducts.innerHTML += `<div class="productCard">
+    adminProducts.innerHTML+=`<div class="productCard">
       <img src="${p.image}" width="100"><br>
       <b>${p.name}</b> - ৳${p.price}<br>
       Category: ${p.category}
@@ -239,11 +226,11 @@ function loadAdminProducts(){
 
 function deleteProduct(i){
   products.splice(i,1);
-  localStorage.setItem('products', JSON.stringify(products));
+  localStorage.setItem('products',JSON.stringify(products));
   loadAdminProducts();
   loadCustomerPage();
 }
-window.deleteProduct = deleteProduct;
+window.deleteProduct=deleteProduct;
 
 </script>
 </body>
