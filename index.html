@@ -1,256 +1,45 @@
-<!doctype html>
-<html lang="bn">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>misron — MN Daily Items</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MN Daily Items</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="login-choice">
+  <h2>Login as</h2>
+  <button id="customerBtn">Customer</button>
+  <button id="adminBtn">Admin</button>
+</div>
 
-  <header class="header">
-    <div class="brand"><div class="logo">M</div><div>MN Daily Items</div></div>
-    <div class="top-actions">
-      <div id="customerInfo" class="pill small"></div>
-      <button id="goAdmin" class="ghost">Admin</button>
-      <button id="openCart" class="btn">Cart (<span id="cartCount">0</span>)</button>
-    </div>
-  </header>
+<!-- Customer login -->
+<div id="customerLogin" style="display:none;">
+  <h3>Customer Login</h3>
+  <input type="text" id="customerPhone" placeholder="Enter phone number">
+  <button id="customerLoginBtn">Login</button>
+</div>
 
-  <main class="container">
-    <div class="top-row">
-      <div class="search">
-        <input id="searchInput" placeholder="Search products, e.g. rice, oil...">
-        <button id="searchBtn" class="ghost">Search</button>
-      </div>
-      <div class="sectors" id="sectors"></div>
-    </div>
+<!-- Admin login -->
+<div id="adminLogin" style="display:none;">
+  <h3>Admin Login</h3>
+  <input type="text" id="adminUser" placeholder="Username">
+  <input type="password" id="adminPass" placeholder="Password">
+  <button id="adminLoginBtn">Login</button>
+</div>
 
-    <section id="productsArea"></section>
-  </main>
-
-  <aside class="cart-panel" id="cartPanel" style="display:none">
-    <h4>Cart</h4>
-    <div id="cartItems"><div class="small">No items</div></div>
-    <div class="total">Total: ৳<span id="cartTotal">0</span></div>
-    <div style="margin-top:10px;display:flex;gap:8px">
-      <button class="btn" id="checkoutBtn">Checkout</button>
-      <button class="ghost" id="clearCart">Clear</button>
-    </div>
-  </aside>
-
-  <div class="footer">Built with ❤️ — misron demo</div>
-
-  <!-- Login Modal (phone) -->
-  <div class="modal" id="loginModal">
-    <div class="box">
-      <h3>Customer Login</h3>
-      <div class="small">Enter phone number to continue. You will be remembered on this device.</div>
-      <div class="form-row">
-        <input id="loginPhone" placeholder="01XXXXXXXXX">
-        <button id="loginBtn" class="btn">Login</button>
-      </div>
-    </div>
+<!-- Customer products -->
+<div id="customerPage" style="display:none;">
+  <h2>Products</h2>
+  <input type="text" id="searchInput" placeholder="Search products...">
+  <div id="productsList"></div>
+  <div id="checkout">
+    <h3>Checkout</h3>
+    <p>Payment Number: <span id="paymentNumber"></span></p>
+    <p>Method: bKash / Nagad</p>
   </div>
+</div>
 
-  <!-- Checkout / Payment Modal -->
-  <div class="modal" id="checkoutModal">
-    <div class="box">
-      <h3>Checkout</h3>
-      <div id="checkoutSummary" class="small" style="margin-bottom:8px"></div>
-      <div class="form-row">
-        <input id="custName" placeholder="Your name">
-      </div>
-      <div class="form-row">
-        <input id="custAddress" placeholder="Delivery address">
-      </div>
-      <div style="margin:8px 0" class="small">Choose Payment Method:</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="ghost" id="payBkash">bKash</button>
-        <button class="ghost" id="payNagad">Nagad</button>
-      </div>
-      <div class="small">Send payment to the number below and then click "I paid".</div>
-      <div style="margin-top:8px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);">
-        <div class="small">bKash: <strong id="showBkash">Not set</strong></div>
-        <div class="small">Nagad: <strong id="showNagad">Not set</strong></div>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px">
-        <button class="btn" id="paidBtn">I paid</button>
-        <button class="ghost" id="cancelCheckout">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-// ----- storage keys -----
-const STORE_KEY = 'MISRON_STORE_v1';
-const PAYMENT_KEY = 'MISRON_PAY_v1';
-const CUSTOMER_KEY = 'MISRON_CUST_v1';
-
-// ----- helper $
-const $ = id => document.getElementById(id);
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-
-// ----- load or init store
-function loadStore(){
-  const raw = localStorage.getItem(STORE_KEY);
-  if(!raw){
-    const def = {
-      sectors:[
-        {id:'s1',name:'Staples',products:[]},
-        {id:'s2',name:'Oils & Spices',products:[]},
-        {id:'s3',name:'Beverages',products:[]},
-        {id:'s4',name:'Snacks',products:[]},
-        {id:'s5',name:'Household',products:[]}
-      ]
-    };
-    localStorage.setItem(STORE_KEY,JSON.stringify(def));
-    return def;
-  }
-  try{ return JSON.parse(raw);}catch(e){ localStorage.removeItem(STORE_KEY); return loadStore();}
-}
-function saveStore(s){ localStorage.setItem(STORE_KEY,JSON.stringify(s)); }
-
-// ----- payment
-function loadPayment(){ const r = localStorage.getItem(PAYMENT_KEY); return r?JSON.parse(r):{bkash:'',nagad:''}; }
-function savePayment(p){ localStorage.setItem(PAYMENT_KEY,JSON.stringify(p)); }
-
-// ----- customer
-function loadCustomer(){ return localStorage.getItem(CUSTOMER_KEY); }
-function saveCustomer(phone){ localStorage.setItem(CUSTOMER_KEY,phone); }
-
-// ----- state
-let store = loadStore();
-let payment = loadPayment();
-let activeSector = store.sectors[0].id;
-let CART = {}; // {prodId:{...prod, qty}}
-let searchQuery = '';
-
-// ----- render sectors
-function renderSectors(){
-  const el = $('sectors'); el.innerHTML='';
-  store.sectors.forEach(s=>{
-    const b = document.createElement('button'); b.className='sector' + (s.id===activeSector?' active':'');
-    b.textContent = s.name;
-    b.onclick = ()=>{ activeSector = s.id; renderSectors(); renderProducts(); }
-    el.appendChild(b);
-  });
-}
-
-// ----- render products by activeSector or search
-function renderProducts(){
-  const area = $('productsArea'); area.innerHTML='';
-  const sec = store.sectors.find(x=>x.id===activeSector);
-  const list = (searchQuery && searchQuery.trim().length>0) ? 
-      store.sectors.flatMap(s=>s.products.map(p=>({...p, sectorName:s.name}))).filter(p=> (p.title+ ' '+ (p.description||'')).toLowerCase().includes(searchQuery.toLowerCase()))
-      : sec ? sec.products : [];
-  if(!list || list.length===0){
-    area.innerHTML = '<div class="small">No products found</div>'; return;
-  }
-  const container = document.createElement('div'); container.className='grid';
-  list.forEach(p=>{
-    const c = document.createElement('div'); c.className='card';
-    c.innerHTML = `<div class="thumb">${p.image?'<img src="'+p.image+'">':p.title}</div>
-      <div class="title">${p.title}</div>
-      <div class="desc">${p.description||''}</div>
-      <div class="price">৳${p.price}</div>
-      <div class="actions">
-        <button class="btn" onclick="addToCart('${p.id}')">Add</button>
-      </div>`;
-    container.appendChild(c);
-  });
-  area.appendChild(container);
-}
-
-// ----- cart functions
-function addToCart(id){
-  let prod = null;
-  for(const s of store.sectors){ const p = s.products.find(x=>x.id===id); if(p){prod=p;break;} }
-  if(!prod) return alert('Product not found');
-  if(!CART[id]) CART[id]={...prod,qty:0};
-  CART[id].qty++;
-  renderCart();
-}
-function renderCart(){
-  const container = $('cartItems'); container.innerHTML='';
-  const keys = Object.keys(CART); if(keys.length===0){ container.innerHTML='<div class="small">No items</div>'; $('cartTotal').textContent='0'; $('cartCount').textContent='0'; return;}
-  let total=0; keys.forEach(k=>{
-    const it = CART[k]; total += it.price*it.qty;
-    const row = document.createElement('div'); row.className='cart-row';
-    row.innerHTML = `${it.title} x ${it.qty} <span>৳${it.price*it.qty}</span>`;
-    container.appendChild(row);
-  });
-  $('cartTotal').textContent = total;
-  $('cartCount').textContent = keys.reduce((s,k)=>s + CART[k].qty,0);
-}
-
-// ----- modal helpers
-function openModal(id){ $(id).style.display='flex'; }
-function closeModal(id){ $(id).style.display='none'; }
-
-// ----- login flow
-function checkLogin(){
-  const phone = loadCustomer();
-  if(!phone){
-    openModal('loginModal');
-  } else {
-    $('customerInfo').textContent = 'Logged: ' + phone;
-  }
-}
-$('loginBtn').addEventListener('click',()=>{
-  const num = $('loginPhone').value.trim();
-  if(!/^\d{10,14}$/.test(num)) return alert('Enter valid phone (digits only)');
-  saveCustomer(num);
-  $('customerInfo').textContent = 'Logged: ' + num;
-  closeModal('loginModal');
-});
-
-// ----- events
-$('searchBtn').addEventListener('click',()=>{
-  searchQuery = $('searchInput').value.trim(); renderProducts();
-});
-$('searchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ searchQuery = e.target.value.trim(); renderProducts(); }});
-
-$('openCart').addEventListener('click',()=>{ const p = $('cartPanel'); p.style.display = p.style.display==='none'?'block':'none'; renderCart();});
-$('clearCart').addEventListener('click',()=>{ if(confirm('Clear cart?')){ CART={}; renderCart(); }});
-
-$('checkoutBtn').addEventListener('click',()=>{
-  if(Object.keys(CART).length===0) return alert('Cart empty');
-  // show checkout modal
-  let sum=0; Object.keys(CART).forEach(k=> sum += CART[k].price * CART[k].qty);
-  $('checkoutSummary').textContent = `Items: ${Object.keys(CART).length} — Total: ৳${sum}`;
-  $('showBkash').textContent = payment.bkash || 'Not set';
-  $('showNagad').textContent = payment.nagad || 'Not set';
-  openModal('checkoutModal');
-});
-
-$('cancelCheckout').addEventListener('click',()=> closeModal('checkoutModal'));
-
-$('paidBtn').addEventListener('click',()=>{
-  const name = $('custName').value.trim(); const addr = $('custAddress').value.trim();
-  if(!name || !addr) return alert('Provide name and address');
-  alert('Thank you '+name+'! Your order is placed (demo). Admin will receive payment on configured number.');
-  // clear cart
-  CART = {}; renderCart(); closeModal('checkoutModal');
-});
-
-// show payment selection (just UI)
-$('payBkash').addEventListener('click',()=>{ if(!payment.bkash) return alert('bKash number not set by admin'); prompt('Send money to bKash number: ' + payment.bkash); });
-$('payNagad').addEventListener('click',()=>{ if(!payment.nagad) return alert('Nagad number not set by admin'); prompt('Send money to Nagad number: ' + payment.nagad); });
-
-// admin redirect
-$('goAdmin').addEventListener('click',()=> { window.location.href = 'admin.html'; });
-
-// ----- initial
-(function(){
-  // load payment
-  payment = loadPayment();
-  // render
-  renderSectors(); renderProducts();
-  renderCart();
-  // login check after small delay
-  setTimeout(checkLogin,300);
-})();
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
