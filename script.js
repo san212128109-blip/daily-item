@@ -1,55 +1,47 @@
-// ----- Login Choice -----
-const customerBtn = document.getElementById('customerBtn');
-const adminBtn = document.getElementById('adminBtn');
-const customerLogin = document.getElementById('customerLogin');
-const adminLogin = document.getElementById('adminLogin');
-const customerPage = document.getElementById('customerPage');
-const adminPanel = document.getElementById('adminPanel');
+// --------- Slider ----------
+let sliderImages = [
+  "https://via.placeholder.com/1200x300?text=Banner+1",
+  "https://via.placeholder.com/1200x300?text=Banner+2",
+  "https://via.placeholder.com/1200x300?text=Banner+3"
+];
+let sliderIndex=0;
+setInterval(()=>{
+  document.getElementById('sliderImg').src = sliderImages[sliderIndex];
+  sliderIndex = (sliderIndex+1) % sliderImages.length;
+},3000);
 
-customerBtn.onclick = ()=>{ customerLogin.style.display='block'; adminLogin.style.display='none'; }
-adminBtn.onclick = ()=>{ adminLogin.style.display='block'; customerLogin.style.display='none'; }
+// --------- Customer Login ----------
+const customerLoginBtnHeader = document.getElementById('customerLoginBtnHeader');
+const modal = document.getElementById('customerLoginModal');
+const closeModal = document.querySelector('.close');
+const customerLoginSubmit = document.getElementById('customerLoginSubmit');
+const customerPhoneInput = document.getElementById('customerPhone');
 
-// ----- Customer Login -----
-const customerLoginBtn = document.getElementById('customerLoginBtn');
-const customerPhone = document.getElementById('customerPhone');
+customerLoginBtnHeader.onclick = ()=>{ modal.style.display='block'; }
+closeModal.onclick = ()=>{ modal.style.display='none'; }
 
-customerLoginBtn.onclick = ()=>{
-  if(customerPhone.value){
-    localStorage.setItem('customerPhone', customerPhone.value);
-    loadCustomerPage();
+customerLoginSubmit.onclick = ()=>{
+  if(customerPhoneInput.value){
+    localStorage.setItem('customerPhone', customerPhoneInput.value);
+    modal.style.display='none';
+    loadProducts();
   } else alert("Enter phone number");
 }
 
+// Auto login
 if(localStorage.getItem('customerPhone')){
-  loadCustomerPage();
-}
-
-function loadCustomerPage(){
-  customerLogin.style.display='none';
-  customerPage.style.display='block';
   loadProducts();
-  document.getElementById('paymentNumber').innerText = localStorage.getItem('paymentNumber') || 'Not set';
 }
 
-// ----- Admin Login -----
-const adminLoginBtn = document.getElementById('adminLoginBtn');
-adminLoginBtn.onclick = ()=>{
-  const username = document.getElementById('adminUser').value;
-  const password = document.getElementById('adminPass').value;
-  if(username === "Daily" && password === "nafis128!@*"){
-    adminLogin.style.display='none';
-    adminPanel.style.display='block';
-    loadAdminProducts();
-  } else { alert("Wrong credentials"); }
-}
-
-// ----- Products -----
+// --------- Products ----------
 let products = JSON.parse(localStorage.getItem('products')) || [];
 
-function loadProducts(){
+function loadProducts(filterCategory){
   const list = document.getElementById('productsList');
   list.innerHTML='';
-  products.forEach((p,i)=>{
+  let filtered = products;
+  if(filterCategory) filtered = products.filter(p=>p.category===filterCategory);
+  filtered.forEach(p=>{
     list.innerHTML += `<div class="productCard">
       <img src="${p.image}" width="100"><br>
       <b>${p.name}</b> - ৳${p.price}<br>
@@ -58,7 +50,7 @@ function loadProducts(){
   });
 }
 
-// ----- Search -----
+// --------- Search ----------
 document.getElementById('searchInput').addEventListener('input', function(){
   const val = this.value.toLowerCase();
   const filtered = products.filter(p=>p.name.toLowerCase().includes(val) || p.category.toLowerCase().includes(val));
@@ -73,50 +65,10 @@ document.getElementById('searchInput').addEventListener('input', function(){
   });
 });
 
-// ----- Admin Panel -----
-const savePayment = document.getElementById('savePayment');
-const adminPayment = document.getElementById('adminPayment');
-const addProductBtn = document.getElementById('addProductBtn');
-const adminProducts = document.getElementById('adminProducts');
+// --------- Category Filter ----------
+document.querySelectorAll('.category-card').forEach(card=>{
+  card.onclick = ()=> loadProducts(card.getAttribute('data-category'));
+});
 
-if(!localStorage.getItem('products')) localStorage.setItem('products', JSON.stringify([]));
-
-savePayment.onclick = ()=>{
-  const val = adminPayment.value.trim();
-  if(val){ localStorage.setItem('paymentNumber', val); alert("Saved!"); } 
-  else alert("Enter number");
-}
-
-addProductBtn.onclick = ()=>{
-  const name = document.getElementById('prodName').value;
-  const price = document.getElementById('prodPrice').value;
-  const image = document.getElementById('prodImage').value;
-  const category = document.getElementById('prodCategory').value;
-  if(name && price && category){
-    let prods = JSON.parse(localStorage.getItem('products')) || [];
-    prods.push({name, price, image, category});
-    localStorage.setItem('products', JSON.stringify(prods));
-    loadAdminProducts();
-    alert("Product added!");
-  } else alert("Fill all fields");
-}
-
-function loadAdminProducts(){
-  const prods = JSON.parse(localStorage.getItem('products')) || [];
-  adminProducts.innerHTML='';
-  prods.forEach((p,i)=>{
-    adminProducts.innerHTML += `<div class="productCard">
-      <img src="${p.image}" width="100"><br>
-      <b>${p.name}</b> - ৳${p.price}<br>
-      Category: ${p.category}
-      <button onclick="deleteProduct(${i})">Delete</button>
-    </div>`;
-  });
-}
-
-window.deleteProduct = function(i){
-  let prods = JSON.parse(localStorage.getItem('products'));
-  prods.splice(i,1);
-  localStorage.setItem('products', JSON.stringify(prods));
-  loadAdminProducts();
-}
+// --------- Payment Number ----------
+document.getElementById('paymentNumber').innerText = localStorage.getItem('paymentNumber') || 'Not set';
