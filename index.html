@@ -4,7 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MN Daily Items</title>
-<link rel="stylesheet" href="style.css">
+<style>
+/* ====== CSS START ====== */
+body{margin:0;font-family:sans-serif;}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;}
+header input{padding:5px;width:200px;}
+.hero-slider img{width:100%;height:300px;object-fit:cover;}
+.categories{padding:20px;}
+.category-cards{display:flex;gap:10px;flex-wrap:wrap;}
+.category-card{flex:1;min-width:120px;background:#f2f2f2;padding:20px;text-align:center;cursor:pointer;}
+.products{padding:20px;}
+#productsList{display:flex;flex-wrap:wrap;gap:10px;}
+.productCard{border:1px solid #ccc;padding:10px;width:150px;}
+.checkout{padding:20px;background:#f9f9f9;}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
+.modal-content{background:white;padding:20px;margin:50px auto;width:300px;position:relative;}
+.close{position:absolute;top:10px;right:10px;cursor:pointer;}
+#adminPanel{padding:20px;background:#f4f4f4;}
+#adminProducts .productCard{width:200px;}
+</style>
 </head>
 <body>
 
@@ -32,14 +50,14 @@
   </div>
 </section>
 
-<!-- Products Grid -->
-<section class="products">
+<!-- Customer Products -->
+<section class="products" id="customerPage" style="display:none;">
   <h2>Featured Products</h2>
   <div id="productsList"></div>
 </section>
 
-<!-- Checkout / Payment -->
-<section class="checkout">
+<!-- Checkout -->
+<section class="checkout" id="checkoutSection" style="display:none;">
   <h3>Checkout</h3>
   <p>Payment Number: <span id="paymentNumber"></span></p>
   <p>Method: bKash / Nagad</p>
@@ -55,6 +73,189 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<!-- Admin Login Modal -->
+<div id="adminLoginModal" class="modal">
+  <div class="modal-content">
+    <span class="closeAdmin">&times;</span>
+    <h3>Admin Login</h3>
+    <input type="text" id="adminUser" placeholder="Username">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button id="adminLoginBtn">Login</button>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div id="adminPanel" style="display:none;">
+  <h2>Store Admin</h2>
+  <h3>Payment Number</h3>
+  <input type="text" id="adminPayment" placeholder="Enter bKash/Nagad Number">
+  <button id="savePayment">Save Number</button>
+
+  <h3>Add Product</h3>
+  <input type="text" id="prodName" placeholder="Product Name">
+  <input type="number" id="prodPrice" placeholder="Price">
+  <input type="text" id="prodImage" placeholder="Image URL">
+  <select id="prodCategory">
+    <option value="Staples">Staples</option>
+    <option value="Oils & Spices">Oils & Spices</option>
+    <option value="Beverages">Beverages</option>
+    <option value="Snacks">Snacks</option>
+    <option value="Household">Household</option>
+  </select>
+  <button id="addProductBtn">Add Product</button>
+
+  <h3>All Products</h3>
+  <div id="adminProducts"></div>
+</div>
+
+<script>
+// ======== JS START =========
+
+// Slider
+let sliderImages = [
+  "https://via.placeholder.com/1200x300?text=Banner+1",
+  "https://via.placeholder.com/1200x300?text=Banner+2",
+  "https://via.placeholder.com/1200x300?text=Banner+3"
+];
+let sliderIndex=0;
+setInterval(()=>{
+  document.getElementById('sliderImg').src = sliderImages[sliderIndex];
+  sliderIndex = (sliderIndex+1) % sliderImages.length;
+},3000);
+
+// Products
+let products = JSON.parse(localStorage.getItem('products')) || [];
+
+// Customer Login
+const customerLoginBtnHeader = document.getElementById('customerLoginBtnHeader');
+const modal = document.getElementById('customerLoginModal');
+const closeModal = document.querySelector('.close');
+const customerLoginSubmit = document.getElementById('customerLoginSubmit');
+const customerPhoneInput = document.getElementById('customerPhone');
+
+customerLoginBtnHeader.onclick = ()=>{ modal.style.display='block'; }
+closeModal.onclick = ()=>{ modal.style.display='none'; }
+
+customerLoginSubmit.onclick = ()=>{
+  if(customerPhoneInput.value){
+    localStorage.setItem('customerPhone', customerPhoneInput.value);
+    modal.style.display='none';
+    loadCustomerPage();
+  } else alert("Enter phone number");
+}
+
+// Auto login
+if(localStorage.getItem('customerPhone')){
+  loadCustomerPage();
+}
+
+function loadCustomerPage(){
+  document.getElementById('customerPage').style.display='block';
+  document.getElementById('checkoutSection').style.display='block';
+  loadProducts();
+  document.getElementById('paymentNumber').innerText = localStorage.getItem('paymentNumber') || 'Not set';
+}
+
+// Load products
+function loadProducts(filterCategory){
+  const list = document.getElementById('productsList');
+  list.innerHTML='';
+  let filtered = products;
+  if(filterCategory) filtered = products.filter(p=>p.category===filterCategory);
+  filtered.forEach(p=>{
+    list.innerHTML += `<div class="productCard">
+      <img src="${p.image}" width="100"><br>
+      <b>${p.name}</b> - ৳${p.price}<br>
+      Category: ${p.category}
+    </div>`;
+  });
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', function(){
+  const val = this.value.toLowerCase();
+  const filtered = products.filter(p=>p.name.toLowerCase().includes(val) || p.category.toLowerCase().includes(val));
+  const list = document.getElementById('productsList');
+  list.innerHTML='';
+  filtered.forEach(p=>{
+    list.innerHTML += `<div class="productCard">
+      <img src="${p.image}" width="100"><br>
+      <b>${p.name}</b> - ৳${p.price}<br>
+      Category: ${p.category}
+    </div>`;
+  });
+});
+
+// Category filter
+document.querySelectorAll('.category-card').forEach(card=>{
+  card.onclick = ()=> loadProducts(card.getAttribute('data-category'));
+});
+
+// Admin Login
+const adminLoginBtnHeader = document.getElementById('adminLoginBtnHeader');
+const adminModal = document.getElementById('adminLoginModal');
+const closeAdmin = document.querySelector('.closeAdmin');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+
+customerLoginBtnHeader.onclick = ()=>{ modal.style.display='block'; }
+closeAdmin.onclick = ()=>{ adminModal.style.display='none'; }
+
+adminLoginBtn.onclick = ()=>{
+  const username = document.getElementById('adminUser').value;
+  const password = document.getElementById('adminPass').value;
+  if(username==="Daily" && password==="nafis128!@*"){
+    adminModal.style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    loadAdminProducts();
+  } else alert("Wrong credentials");
+}
+
+// Admin panel
+const savePayment = document.getElementById('savePayment');
+const adminPayment = document.getElementById('adminPayment');
+const addProductBtn = document.getElementById('addProductBtn');
+const adminProducts = document.getElementById('adminProducts');
+
+savePayment.onclick = ()=>{
+  const val = adminPayment.value.trim();
+  if(val){ localStorage.setItem('paymentNumber', val); alert("Saved!"); } 
+  else alert("Enter number");
+}
+
+addProductBtn.onclick = ()=>{
+  const name = document.getElementById('prodName').value;
+  const price = document.getElementById('prodPrice').value;
+  const image = document.getElementById('prodImage').value;
+  const category = document.getElementById('prodCategory').value;
+  if(name && price && category){
+    products.push({name, price, image, category});
+    localStorage.setItem('products', JSON.stringify(products));
+    loadAdminProducts();
+    loadCustomerPage();
+    alert("Product added!");
+  } else alert("Fill all fields");
+}
+
+function loadAdminProducts(){
+  adminProducts.innerHTML='';
+  products.forEach((p,i)=>{
+    adminProducts.innerHTML += `<div class="productCard">
+      <img src="${p.image}" width="100"><br>
+      <b>${p.name}</b> - ৳${p.price}<br>
+      Category: ${p.category}
+      <button onclick="deleteProduct(${i})">Delete</button>
+    </div>`;
+  });
+}
+
+function deleteProduct(i){
+  products.splice(i,1);
+  localStorage.setItem('products', JSON.stringify(products));
+  loadAdminProducts();
+  loadCustomerPage();
+}
+window.deleteProduct = deleteProduct;
+
+</script>
 </body>
 </html>
