@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MN Daily Items</title>
 <style>
-/* ====== CSS START ====== */
 body{margin:0;font-family:sans-serif;}
 header{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#ff3f6c;color:white;}
 header input{padding:5px;width:200px;}
@@ -22,23 +21,21 @@ header input{padding:5px;width:200px;}
 .close{position:absolute;top:10px;right:10px;cursor:pointer;}
 #adminPanel{padding:20px;background:#f4f4f4;}
 #adminProducts .productCard{width:200px;}
+button{cursor:pointer;}
 </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <header>
   <div class="logo">MN Daily Items</div>
   <input type="text" id="searchInput" placeholder="Search products...">
   <button id="customerLoginBtnHeader">Login</button>
 </header>
 
-<!-- Hero Slider -->
 <div class="hero-slider">
   <img id="sliderImg" src="https://via.placeholder.com/1200x300?text=Banner+1" alt="Banner">
 </div>
 
-<!-- Categories -->
 <section class="categories">
   <h2>Categories</h2>
   <div class="category-cards">
@@ -50,13 +47,11 @@ header input{padding:5px;width:200px;}
   </div>
 </section>
 
-<!-- Customer Products -->
 <section class="products" id="customerPage" style="display:none;">
   <h2>Featured Products</h2>
   <div id="productsList"></div>
 </section>
 
-<!-- Checkout -->
 <section class="checkout" id="checkoutSection" style="display:none;">
   <h3>Checkout</h3>
   <p>Payment Number: <span id="paymentNumber"></span></p>
@@ -109,9 +104,6 @@ header input{padding:5px;width:200px;}
 </div>
 
 <script>
-// ======== JS START =========
-
-// Slider
 let sliderImages = [
   "https://via.placeholder.com/1200x300?text=Banner+1",
   "https://via.placeholder.com/1200x300?text=Banner+2",
@@ -156,7 +148,6 @@ function loadCustomerPage(){
   document.getElementById('paymentNumber').innerText = localStorage.getItem('paymentNumber') || 'Not set';
 }
 
-// Load products
 function loadProducts(filterCategory){
   const list = document.getElementById('productsList');
   list.innerHTML='';
@@ -192,12 +183,10 @@ document.querySelectorAll('.category-card').forEach(card=>{
 });
 
 // Admin Login
-const adminLoginBtnHeader = document.getElementById('adminLoginBtnHeader');
 const adminModal = document.getElementById('adminLoginModal');
 const closeAdmin = document.querySelector('.closeAdmin');
 const adminLoginBtn = document.getElementById('adminLoginBtn');
 
-customerLoginBtnHeader.onclick = ()=>{ modal.style.display='block'; }
 closeAdmin.onclick = ()=>{ adminModal.style.display='none'; }
 
 adminLoginBtn.onclick = ()=>{
@@ -210,7 +199,7 @@ adminLoginBtn.onclick = ()=>{
   } else alert("Wrong credentials");
 }
 
-// Admin panel
+// Admin panel functions
 const savePayment = document.getElementById('savePayment');
 const adminPayment = document.getElementById('adminPayment');
 const addProductBtn = document.getElementById('addProductBtn');
